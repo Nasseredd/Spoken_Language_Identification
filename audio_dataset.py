@@ -1,6 +1,7 @@
 ########################### NOTES ##########################
 # Monday 10.01.2022 
     # 21:53 DONE: create AudioDataset that gets mel spectrograms as features and the language as label
+    # 22:30 DONE: convert mel spetrograms and languages into torch.tensor 
 ############################################################
 import glob 
 import librosa
