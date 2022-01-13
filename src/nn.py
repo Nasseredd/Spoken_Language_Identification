@@ -1,30 +1,19 @@
-import torch
 import torch.nn as nn
-import numpy as np
 
 # Define a CNN classifier module.
-
-class CNNClassif(nn.Module):
-    def __init__(self, num_channels1=16, num_channels2=32, num_classes=10):
-        super(CNNClassif, self).__init__()
-
-        self.cnn_layer1 = nn.Sequential(nn.Conv2d(1, num_channels1, kernel_size=5, padding=2),
-                                        nn.ReLU(),
-                                        nn.MaxPool2d(kernel_size=2))
-        self.cnn_layer2 = nn.Sequential(nn.Conv2d(num_channels1, num_channels2, kernel_size=5, padding=2),
-                                        nn.ReLU(),
-                                        nn.MaxPool2d(kernel_size=2))
-        self.cnn_layer3 = nn.Linear(num_channels2*7*7, num_classes)
+class LICNN(nn.Module):
+    def __init__(self, nb_channels_1 = 1, nb_channels_2 = 16, num_classes = 3):
+        self.cnn_layer1 = nn.Sequential(
+            nn.Conv2d(nb_channels_1, nb_channels_2, kernel_size=5, padding=4, biais=False),
+            nn.ReLU(),
+            nn.BatchNorm2d(nb_channels_2),
+            nn.MaxPool(kernel_size=2))
+        self.linear_layer = nn.Linear(nb_channels_2*7*7, num_classes)   # (num_channels, num_frames, num_features)
+        self.softmax = nn.Softmax()
 
     def forward(self, x):
-
-        # TO DO: write the forward pass, which:
-        # - applies the two cnn layers to produce feature maps
-        a1 = self.cnn_layer1(x)
-        a2 = self.cnn_layer2(a1)
-        # - vectorize the feature maps
-        out_vec = a2.reshape(a2.shape[0], -1)
-        # - applies the linear layer
-        out = self.cnn_layer3(out_vec)
-
-        return out
+        output = self.cnn_layer1(x) 
+        output = output.reshape(output.shape(0), -1) 
+        output = output.linear_layer(output) 
+        output = output.softmax(output) 
+        return output
