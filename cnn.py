@@ -1,4 +1,5 @@
 import torch
+import itertools
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
@@ -54,7 +55,7 @@ class ConvNet(nn.Module):
 
         # Train the model
         for epoch in range(NUM_EPOCHS):
-            loss = list(map(train_iter, train_loader))[-1]
+            loss = list(itertools.starmap(train_iter, train_loader))[-1]
 
             val_loss = validate(criterion)
 
@@ -73,6 +74,7 @@ class ConvNet(nn.Module):
         return loss / len(validation_loader)
 
     def __train_iteration(self, criterion, optimizer, mel_spectro, lang):
+        print("step")
         mel_spectro = mel_spectro.to(DEVICE)
         lang = lang.to(DEVICE)
 
