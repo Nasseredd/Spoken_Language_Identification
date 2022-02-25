@@ -47,13 +47,13 @@ class ConvNet(nn.Module):
 
         # Train the model
         for epoch in range(NUM_EPOCHS):
-            for _, (images, labels) in enumerate(train_loader):
-                images = images.to(DEVICE)
-                labels = labels.to(DEVICE)
+            for mel_spectro, lang in train_loader:
+                mel_spectro = mel_spectro.to(DEVICE)
+                lang = lang.to(DEVICE)
 
                 # Forward pass
-                outputs = self(images)
-                loss = criterion(outputs, labels)
+                outputs = self(mel_spectro)
+                loss = criterion(outputs, lang)
 
                 # Backward and optimize
                 optimizer.zero_grad()
@@ -69,13 +69,13 @@ class ConvNet(nn.Module):
         with torch.no_grad():
             correct = 0
             total = 0
-            for images, labels in test_loader:
-                images = images.to(DEVICE)
-                labels = labels.to(DEVICE)
-                outputs = self(images)
+            for mel_spectro, lang in test_loader:
+                mel_spectro = mel_spectro.to(DEVICE)
+                lang = lang.to(DEVICE)
+                outputs = self(mel_spectro)
                 _, predicted = torch.max(outputs.data, 1)
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
+                total += lang.size(0)
+                correct += (predicted == lang).sum().item()
 
             print('Test Accuracy of the model on the 10000 test images: {} %'.format(
                 100 * correct / total))
