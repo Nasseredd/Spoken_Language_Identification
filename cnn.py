@@ -60,7 +60,7 @@ class ConvNet(nn.Module):
         for epoch in range(NUM_EPOCHS):
             loss = list(itertools.starmap(train_iter, train_loader))[-1]
 
-            val_loss = validate(criterion)
+            val_loss = validate()
 
             print('Epoch [{}/{}], Loss: {:.4f}, Val. Loss: {:.4f}'.format(epoch +
                   1, NUM_EPOCHS, loss.item(), val_loss))
