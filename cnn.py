@@ -38,35 +38,54 @@ class ConvNet(nn.Module):
         out = self.fc(out)
         return out
 
-    def train(self, train_loader: DataLoader):
+    def train(self, train_loader: DataLoader, validation_loader: DataLoader = None):
         self = self.to(DEVICE)
 
         # Loss and optimizer
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(self.parameters(), lr=LEARNING_RATE)
-        train_iter = lambda mel_spectro, lang: self.__train_iteration(criterion, optimizer, mel_spectro, lang)
+
+        # Training iteration (for map())
+        def train_iter(mel_spectro, lang): return self.__train_iteration(
+            criterion, optimizer, mel_spectro, lang)
+        
+        # Validation function: execute validation() or return None
+        validate = lambda: self.validation(criterion, validation_loader) if validation_loader else lambda: None
 
         # Train the model
         for epoch in range(NUM_EPOCHS):
             loss = list(map(train_iter, train_loader))[-1]
 
-            print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, NUM_EPOCHS, loss.item()))
+            val_loss = validate(criterion)
+
+            print('Epoch [{}/{}], Loss: {:.4f}, Val. Loss: {:.4f}'.format(epoch +
+                  1, NUM_EPOCHS, loss.item(), val_loss))
             torch.save(self.state_dict(), f'model_{epoch+1}.ckpt')
 
+    def validation(self, criterion, validation_loader):
+        self.eval()
+        loss = 0
+        with torch.no_grad():
+            for x, y in validation_loader:
+                out = self(x)
+                loss += criterion(out, y)
+        self.train()
+        return loss / len(validation_loader)
+
     def __train_iteration(self, criterion, optimizer, mel_spectro, lang):
-            mel_spectro = mel_spectro.to(DEVICE)
-            lang = lang.to(DEVICE)
+        mel_spectro = mel_spectro.to(DEVICE)
+        lang = lang.to(DEVICE)
 
-            # Forward pass
-            outputs = self(mel_spectro)
-            loss = criterion(outputs, lang)
+        # Forward pass
+        outputs = self(mel_spectro)
+        loss = criterion(outputs, lang)
 
-            # Backward and optimize
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+        # Backward and optimize
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
 
-            return loss
+        return loss
 
     def test(self, test_loader: DataLoader):
         # Test the model
@@ -83,4 +102,4 @@ class ConvNet(nn.Module):
                 correct += int(predicted == lang)
 
             print('Test Accuracy of the model on the {} test mel spectrograms: {} %'.format(total,
-                100 * correct / total))
+                                                                                            100 * correct / total))
