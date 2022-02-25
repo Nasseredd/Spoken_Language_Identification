@@ -33,6 +33,7 @@ class ConvNet(nn.Module):
         self.fc = nn.Linear(7*7*32, num_classes)
 
     def forward(self, x):
+        x = x.unsqueeze(1)
         out = self.layer1(x)
         out = self.layer2(out)
         out = out.reshape(out.size(0), -1)
