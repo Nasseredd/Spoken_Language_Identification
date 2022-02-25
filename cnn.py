@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch.utils.data import DataLoader
 
 # Device configuration
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -45,9 +46,8 @@ class ConvNet(nn.Module):
         optimizer = torch.optim.Adam(self.parameters(), lr=LEARNING_RATE)
 
         # Train the model
-        total_step = len(train_loader)
         for epoch in range(NUM_EPOCHS):
-            for i, (images, labels) in enumerate(train_loader):
+            for _, (images, labels) in enumerate(train_loader):
                 images = images.to(DEVICE)
                 labels = labels.to(DEVICE)
 
@@ -60,8 +60,7 @@ class ConvNet(nn.Module):
                 loss.backward()
                 optimizer.step()
 
-            print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'
-                  .format(epoch+1, NUM_EPOCHS, i+1, total_step, loss.item()))
+            print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, NUM_EPOCHS, loss.item()))
             torch.save(self.state_dict(), f'model_{epoch+1}.ckpt')
 
     def test(self, test_loader):
