@@ -38,7 +38,7 @@ class ConvNet(nn.Module):
         out = self.fc(out)
         return out
 
-    def train(self, train_loader):
+    def train(self, train_loader: DataLoader):
         self.to(DEVICE)
 
         # Loss and optimizer
@@ -63,7 +63,7 @@ class ConvNet(nn.Module):
             print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, NUM_EPOCHS, loss.item()))
             torch.save(self.state_dict(), f'model_{epoch+1}.ckpt')
 
-    def test(self, test_loader):
+    def test(self, test_loader: DataLoader):
         # Test the model
         self.eval()  # eval mode (batchnorm uses moving mean/variance instead of mini-batch mean/variance)
         with torch.no_grad():
