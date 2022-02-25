@@ -44,24 +44,29 @@ class ConvNet(nn.Module):
         # Loss and optimizer
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(self.parameters(), lr=LEARNING_RATE)
+        train_iter = lambda mel_spectro, lang: self.__train_iteration(criterion, optimizer, mel_spectro, lang)
 
         # Train the model
         for epoch in range(NUM_EPOCHS):
-            for mel_spectro, lang in train_loader:
-                mel_spectro = mel_spectro.to(DEVICE)
-                lang = lang.to(DEVICE)
-
-                # Forward pass
-                outputs = self(mel_spectro)
-                loss = criterion(outputs, lang)
-
-                # Backward and optimize
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
+            loss = list(map(train_iter, train_loader))[-1]
 
             print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, NUM_EPOCHS, loss.item()))
             torch.save(self.state_dict(), f'model_{epoch+1}.ckpt')
+
+    def __train_iteration(self, criterion, optimizer, mel_spectro, lang):
+            mel_spectro = mel_spectro.to(DEVICE)
+            lang = lang.to(DEVICE)
+
+            # Forward pass
+            outputs = self(mel_spectro)
+            loss = criterion(outputs, lang)
+
+            # Backward and optimize
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            return loss
 
     def test(self, test_loader: DataLoader):
         # Test the model
