@@ -30,13 +30,13 @@ class ConvNet(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2))
 
-        self.fc = nn.Linear(7*7*32, num_classes)
+        self.fc = nn.Linear(32*32*107, num_classes)
 
     def forward(self, x):
         x = x.unsqueeze(1)
         out = self.layer1(x)
         out = self.layer2(out)
-        out = out.reshape(out.size(0), -1)
+        out = out.reshape(out.shape[0], -1)
         out = self.fc(out)
         return out
 
@@ -78,7 +78,7 @@ class ConvNet(nn.Module):
         print("step")
         mel_spectro = mel_spectro.to(DEVICE)
         lang = lang.to(DEVICE)
-
+        lang = lang.squeeze()
         # Forward pass
         outputs = self(mel_spectro)
         loss = criterion(outputs, lang)
