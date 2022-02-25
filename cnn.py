@@ -79,8 +79,8 @@ class ConvNet(nn.Module):
                 lang = lang.to(DEVICE)
                 outputs = self(mel_spectro)
                 _, predicted = torch.max(outputs.data, 1)
-                total += lang.size(0)
-                correct += (predicted == lang).sum().item()
+                total += lang
+                correct += int(predicted == lang)
 
-            print('Test Accuracy of the model on the 10000 test images: {} %'.format(
+            print('Test Accuracy of the model on the {} test mel spectrograms: {} %'.format(total,
                 100 * correct / total))
