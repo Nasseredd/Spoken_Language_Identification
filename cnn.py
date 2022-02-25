@@ -31,6 +31,7 @@ class ConvNet(nn.Module):
             nn.MaxPool2d(kernel_size=2, stride=2))
 
         self.fc = nn.Linear(32*32*107, num_classes)
+        self.act = nn.Softmax(dim=1)
 
     def forward(self, x):
         x = x.unsqueeze(1)
@@ -38,6 +39,7 @@ class ConvNet(nn.Module):
         out = self.layer2(out)
         out = out.reshape(out.shape[0], -1)
         out = self.fc(out)
+        out = self.act(out)
         return out
 
     def train_model(self, train_loader: DataLoader, validation_loader: DataLoader = None):
