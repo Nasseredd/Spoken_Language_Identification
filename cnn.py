@@ -39,7 +39,7 @@ class ConvNet(nn.Module):
         return out
 
     def train(self, train_loader: DataLoader):
-        self.to(DEVICE)
+        self = self.to(DEVICE)
 
         # Loss and optimizer
         criterion = nn.CrossEntropyLoss()
