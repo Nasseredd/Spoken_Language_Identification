@@ -6,8 +6,9 @@ from torch.utils.data import DataLoader, Subset, random_split
 import cnn as our_cnn
 from audio_dataset import AudioDataset
 
+DEFAULT_DATA_PATH = os.path.normpath('C:\\Users\\user\\Desktop\\train')
 
-def read_dataset(root_dir: str = 'Data', sampleSize: int = 1000, testRep: float = 0.15, valRep: float = 0.15) -> tuple[Subset]:
+def read_dataset(root_dir: str = DEFAULT_DATA_PATH, sampleSize: int = 1000, testRep: float = 0.15, valRep: float = 0.15) -> tuple[Subset]:
     """Create Sample instances for the training, validation and test subsets. 
     It loads all files from <root_dir>/train and <root_dir>/test, then sample them according to <sampleSize>, <testRep>,  and <valRep>.
 
@@ -27,7 +28,9 @@ def read_dataset(root_dir: str = 'Data', sampleSize: int = 1000, testRep: float 
     # Create datasets, then subsets of sampleSize, sampleSize * valRep, and sampleSize * testRep
     train_set, test_set = AudioDataset(train_path), AudioDataset(test_path)
     train_subset = Subset(train_set, torch.arange(sampleSize))
-    train_subset, val_subset = random_split(train_subset, [1 - valRep, valRep])
+    val_size = int(sampleSize * valRep)
+    train_subset, val_subset = random_split(
+        train_subset, [sampleSize - val_size, val_size])
 
     test_subset = Subset(test_set, torch.arange(sampleSize * testRep))
 
@@ -51,7 +54,7 @@ def test_model(test_dataloader: DataLoader):
     model.test(test_dataloader)
 
 
-def main(root_dir: str = '/c/Users/user/Desktop/', sampleSize: int = 1000, testRep: float = 0.15, valRep: float = 0.15):
+def main(root_dir: str = DEFAULT_DATA_PATH, sampleSize: int = 1000, testRep: float = 0.15, valRep: float = 0.15):
     samples = read_dataset(root_dir, sampleSize, testRep, valRep)
     train_dl, val_dl, test_dl = init_dataloaders(*samples)
     init_and_train_model(train_dl, val_dl)
