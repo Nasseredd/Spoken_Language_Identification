@@ -41,7 +41,7 @@ def init_dataloaders(*subsets: tuple[Subset]) -> list[DataLoader]:
 def init_and_train_model(train_dataloader: DataLoader, validation_dataloader: DataLoader):
     model = our_cnn.ConvNet(our_cnn.NUM_CLASSES)
 
-    model.train(train_dataloader, validation_dataloader)
+    model.train_model(train_dataloader, validation_dataloader)
     torch.save(model.state_dict(), f'model.ckpt')
 
 

@@ -38,7 +38,7 @@ class ConvNet(nn.Module):
         out = self.fc(out)
         return out
 
-    def train(self, train_loader: DataLoader, validation_loader: DataLoader = None):
+    def train_model(self, train_loader: DataLoader, validation_loader: DataLoader = None):
         self = self.to(DEVICE)
 
         # Loss and optimizer
