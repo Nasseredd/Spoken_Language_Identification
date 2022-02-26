@@ -1,5 +1,8 @@
-import torch
 import itertools
+
+import numpy as np
+import pandas as pd
+import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
@@ -44,6 +47,7 @@ class ConvNet(nn.Module):
 
     def train_model(self, train_loader: DataLoader, validation_loader: DataLoader = None):
         self = self.to(DEVICE)
+        losses = np.zeros((2,NUM_EPOCHS))
 
         # Loss and optimizer
         criterion = nn.CrossEntropyLoss()
@@ -64,7 +68,12 @@ class ConvNet(nn.Module):
 
             print('Epoch [{}/{}], Loss: {:.4f}, Val. Loss: {:.4f}'.format(epoch +
                   1, NUM_EPOCHS, loss.item(), val_loss))
+
+            losses[epoch] = [loss, val_loss]
             torch.save(self.state_dict(), f'model_{epoch+1}.ckpt')
+
+        losses_df = pd.DataFrame(losses)
+        losses_df.to_csv("training_losses.csv")
 
     def validation(self, criterion, validation_loader):
         self.eval()
@@ -110,5 +119,9 @@ class ConvNet(nn.Module):
                 total += lang.size(0)
                 correct += (predicted == lang).sum().item()
 
-            print('Test Accuracy of the model on the {} test mel spectrograms: {} %'.format(total,
-                                                                                            100 * correct / total))
+            str_output = 'Test Accuracy of the model on the {} test mel spectrograms: {} %'.format(total,
+                                                                                            100 * correct / total)
+            print(str_output)
+
+            with open("test_result.txt") as file:
+                file.write(str_output)
