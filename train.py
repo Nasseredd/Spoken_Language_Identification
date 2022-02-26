@@ -49,7 +49,8 @@ def init_and_train_model(train_dataloader: DataLoader, validation_dataloader: Da
 
 
 def test_model(test_dataloader: DataLoader):
-    model = torch.load("model.ckpt")
+    model = our_cnn.ConvNet(our_cnn.NUM_CLASSES)
+    model.load_state_dict(torch.load("model.ckpt"))
 
     model.test(test_dataloader)
 
