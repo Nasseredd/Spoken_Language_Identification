@@ -70,14 +70,17 @@ class ConvNet(nn.Module):
         self.eval()
         loss = 0
         with torch.no_grad():
-            for x, y in validation_loader:
-                out = self(x)
-                loss += criterion(out, y)
+            for mel_spectro, lang in validation_loader:
+                mel_spectro = mel_spectro.to(DEVICE)
+                lang = lang.to(DEVICE)
+                lang = lang.squeeze()
+
+                out = self(mel_spectro)
+                loss += criterion(out, lang)
         self.train()
         return loss / len(validation_loader)
 
     def __train_iteration(self, criterion, optimizer, mel_spectro, lang):
-        print("step")
         mel_spectro = mel_spectro.to(DEVICE)
         lang = lang.to(DEVICE)
         lang = lang.squeeze()
@@ -101,6 +104,7 @@ class ConvNet(nn.Module):
             for mel_spectro, lang in test_loader:
                 mel_spectro = mel_spectro.to(DEVICE)
                 lang = lang.to(DEVICE)
+                lang = lang.squeeze()
                 outputs = self(mel_spectro)
                 _, predicted = torch.max(outputs.data, 1)
                 total += lang
