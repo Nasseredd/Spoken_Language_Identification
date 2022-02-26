@@ -31,6 +31,7 @@ class AudioDataset(Dataset):
         language = audio_name[:2]
         language_index = self.language2index[language]  # encode the Label
         language_tensor = torch.Tensor([language_index])
+        language_tensor = language_tensor.type(torch.LongTensor)
         return mel_spectrogram_tensor, language_tensor
 
     # Mel Spectrogram
