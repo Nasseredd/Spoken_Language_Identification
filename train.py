@@ -19,7 +19,7 @@ def read_dataset(root_dir: str = DEFAULT_DATA_PATH, sampleSize: int = 1000, test
         valRep (float, optional): The repartition of the validation set sample compared i.r.t. the training one. Defaults to 0.15.
 
     Returns:
-        tuple[Subset]: Two Subset instances, corresponding to the training and test subsets.
+        tuple[Subset]: Three Subset instances, corresponding to the training, validation, and test subsets.
     """
     # Create paths
     train_path = os.path.join(".", root_dir, "train")
@@ -28,12 +28,15 @@ def read_dataset(root_dir: str = DEFAULT_DATA_PATH, sampleSize: int = 1000, test
     # Create datasets, then subsets of sampleSize, sampleSize * valRep, and sampleSize * testRep
     train_set, test_set = AudioDataset(train_path), AudioDataset(test_path)
 
-    train_subset = Subset(train_set, torch.arange(sampleSize))
+    # Train subsets (train, val, and reminder)
     val_size = int(sampleSize * valRep)
-    train_subset, val_subset = random_split(
-        train_subset, [sampleSize - val_size, val_size])
+    reminder = len(train_set) - val_size - sampleSize
+    train_subset, val_subset, _ = random_split(train_set, [sampleSize, val_size, reminder])
 
-    test_subset = Subset(test_set, torch.arange(int(sampleSize * testRep)))
+    # Test subset (test, and reminder)
+    test_size = int(sampleSize * testRep)
+    reminder = len(test_set) - test_size
+    test_subset, _ = random_split(test_set, [test_size, reminder])
 
     return train_subset, val_subset, test_subset
 
@@ -60,7 +63,6 @@ def main(root_dir: str = DEFAULT_DATA_PATH, sampleSize: int = 1000, testRep: flo
     samples = read_dataset(root_dir, sampleSize, testRep, valRep)
     train_dl, val_dl, test_dl = init_dataloaders(*samples)
     # init_and_train_model(train_dl, val_dl)
-    len(test_dl)
     test_model(test_dl)
 
 
