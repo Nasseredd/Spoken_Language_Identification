@@ -38,6 +38,7 @@ def read_dataset(root_dir: str = DEFAULT_DATA_PATH, sampleSize: int = 1000, test
     reminder = len(test_set) - test_size
     test_subset, _ = random_split(test_set, [test_size, reminder])
 
+    assert 0 not in (len(train_subset), len(val_subset), len(test_subset)), "At least one of the subsets is empty. Please check the paths."
     return train_subset, val_subset, test_subset
 
 
