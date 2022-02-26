@@ -1,3 +1,4 @@
+from email import header
 import itertools
 
 import numpy as np
@@ -47,7 +48,7 @@ class ConvNet(nn.Module):
 
     def train_model(self, train_loader: DataLoader, validation_loader: DataLoader = None):
         self = self.to(DEVICE)
-        losses = np.zeros((2,NUM_EPOCHS))
+        losses = np.zeros((NUM_EPOCHS, 2))
 
         # Loss and optimizer
         criterion = nn.CrossEntropyLoss()
@@ -62,17 +63,17 @@ class ConvNet(nn.Module):
 
         # Train the model
         for epoch in range(NUM_EPOCHS):
-            loss = list(itertools.starmap(train_iter, train_loader))[-1]
+            loss = list(itertools.starmap(train_iter, train_loader))[-1].item()
 
             val_loss = validate()
 
             print('Epoch [{}/{}], Loss: {:.4f}, Val. Loss: {:.4f}'.format(epoch +
-                  1, NUM_EPOCHS, loss.item(), val_loss))
+                  1, NUM_EPOCHS, loss, val_loss))
 
             losses[epoch] = [loss, val_loss]
             torch.save(self.state_dict(), f'model_{epoch+1}.ckpt')
 
-        losses_df = pd.DataFrame(losses)
+        losses_df = pd.DataFrame(losses, columns=["Training", "Validation"])
         losses_df.to_csv("training_losses.csv")
 
     def validation(self, criterion, validation_loader):
@@ -123,5 +124,5 @@ class ConvNet(nn.Module):
                                                                                             100 * correct / total)
             print(str_output)
 
-            with open("test_result.txt") as file:
+            with open("test_result.txt", 'w') as file:
                 file.write(str_output)
