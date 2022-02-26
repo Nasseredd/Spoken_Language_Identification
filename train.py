@@ -59,7 +59,7 @@ def test_model(test_dataloader: DataLoader):
     model.test(test_dataloader)
 
 
-def main(root_dir: str = DEFAULT_DATA_PATH, sampleSize: int = 10000, testRep: float = 0.15, valRep: float = 0.15):
+def main(root_dir: str = DEFAULT_DATA_PATH, sampleSize: int = 5000, testRep: float = 0.15, valRep: float = 0.15):
     samples = read_dataset(root_dir, sampleSize, testRep, valRep)
     train_dl, val_dl, test_dl = init_dataloaders(*samples)
     init_and_train_model(train_dl, val_dl)

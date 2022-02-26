@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 # Hyper parameters
-NUM_EPOCHS = 5
+NUM_EPOCHS = 10
 NUM_CLASSES = 3
 BATCH_SIZE = 100
 LEARNING_RATE = 0.001
