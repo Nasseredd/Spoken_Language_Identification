@@ -27,12 +27,13 @@ def read_dataset(root_dir: str = DEFAULT_DATA_PATH, sampleSize: int = 1000, test
 
     # Create datasets, then subsets of sampleSize, sampleSize * valRep, and sampleSize * testRep
     train_set, test_set = AudioDataset(train_path), AudioDataset(test_path)
+
     train_subset = Subset(train_set, torch.arange(sampleSize))
     val_size = int(sampleSize * valRep)
     train_subset, val_subset = random_split(
         train_subset, [sampleSize - val_size, val_size])
 
-    test_subset = Subset(test_set, torch.arange(sampleSize * testRep))
+    test_subset = Subset(test_set, torch.arange(int(sampleSize * testRep)))
 
     return train_subset, val_subset, test_subset
 
@@ -58,7 +59,8 @@ def test_model(test_dataloader: DataLoader):
 def main(root_dir: str = DEFAULT_DATA_PATH, sampleSize: int = 1000, testRep: float = 0.15, valRep: float = 0.15):
     samples = read_dataset(root_dir, sampleSize, testRep, valRep)
     train_dl, val_dl, test_dl = init_dataloaders(*samples)
-    init_and_train_model(train_dl, val_dl)
+    # init_and_train_model(train_dl, val_dl)
+    len(test_dl)
     test_model(test_dl)
 
 
