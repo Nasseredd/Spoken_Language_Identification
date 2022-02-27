@@ -12,8 +12,8 @@ DEFAULT_DATA_PATH = os.path.normpath('C:\\Users\\user\\Desktop\\train')
 # Hyper-parameters: number of epochs, batch size, learning rate, default sample size (train. set)
 NUM_EPOCHS = 10
 BATCH_SIZE = 100
-LEARNING_RATE = 0.001
-DEFAULT_SAMPLE_SIZE = 1000
+LEARNING_RATE = 0.002
+DEFAULT_SAMPLE_SIZE = 5000
 
 def read_dataset(root_dir: str, sampleSize: int, testRep: float = 0.15, valRep: float = 0.15) -> tuple[Subset]:
     """Create Sample instances for the training, validation and test subsets. 
