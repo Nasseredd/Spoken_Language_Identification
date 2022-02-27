@@ -12,10 +12,25 @@ DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 # Number of classes: en, de, es
 NUM_CLASSES = 3
 
-# Convolutional neural network (two convolutional layers)
-class ConvNet(nn.Module):
-    def __init__(self, num_epochs, learning_rate):
 
+class ConvNet(nn.Module):
+    """ Convolutional neural network for spoken language recognition.
+    Subclass of pyTorch's nn.Module class.
+    Use 2 Sequential layers: Convolution (k=5, s=1, p=2), Batch normalization, ReLU activation, Max Pooling (k=2, s=2)
+    One linear layer, and a softmax one.
+    """
+
+    def __init__(self, num_epochs: int, learning_rate: float):
+        """Initializer/constructor
+
+        Initialize the layers, store hyper-parameters that directly affect the network.
+        Initialize the optimizer and loss criterion to None, to declare them as instance attributes
+        They are initialized in the training function, where they are needed.
+
+        Args:
+            num_epochs (int): the number of epochs to perform in training.
+            learning_rate (float): the network's learning rate.
+        """
         super(ConvNet, self).__init__()
         self.num_epochs = num_epochs
         self.learning_rate = learning_rate
@@ -39,7 +54,16 @@ class ConvNet(nn.Module):
         self.criterion = None
         self.optimizer = None
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward propagation
+        Pass the input tensor x and its derivatives through the different layers.
+
+        Args:
+            x (Tensor): Input tensor to the network.
+
+        Returns:
+            torch.Tensor: Output of the neural network.
+        """
         out = self.layer1(x)
         out = self.layer2(out)
         out = out.reshape(out.shape[0], -1)
@@ -47,7 +71,16 @@ class ConvNet(nn.Module):
         out = self.act(out)
         return out
 
-    def train_model(self, train_loader: DataLoader, validation_loader: DataLoader = None):
+    def train_model(self, train_loader: DataLoader, validation_loader: DataLoader):
+        """The model's training function.
+        Perform training and validation tasks on the model, thanks to dataloaders.
+        Print the losses obtained during training, and store them into Numpy Array, then CSV format through Pandas.
+        Relies on itertool.starmap() and np.sum().
+
+        Args:
+            train_loader (DataLoader): DataLoader containing the training data.
+            validation_loader (DataLoader): DataLoader containing the validation data.
+        """
         # Send model (self) to DEVICE
         self = self.to(DEVICE)
 
@@ -82,7 +115,18 @@ class ConvNet(nn.Module):
         losses_df = pd.DataFrame(losses, columns=["Training", "Validation"])
         losses_df.to_csv("training_losses.csv")
 
-    def forward_pass(self, mel_spectro, expected):
+    def forward_pass(self, mel_spectro: torch.Tensor, expected: torch.Tensor):
+        """Perform a forward pass with loss computation
+        Transfer the arguments to DEVICE, then pass the first one through the network.
+        The network output is evaluated with the loss function and the expected output.
+
+        Args:
+            mel_spectro (torch.Tensor): Mel Spectrogram — Input to the network.
+            expected (torch.Tensor): The fragment's language — the expected result.
+
+        Returns:
+            Loss?: The loss of the output compared to the expectation.
+        """
         mel_spectro = mel_spectro.to(DEVICE)
         expected = expected.to(DEVICE)
 
@@ -90,7 +134,18 @@ class ConvNet(nn.Module):
         predicted = self(mel_spectro)
         return self.criterion(predicted, expected)
 
-    def train_iter(self, mel_spectro, lang):
+    def train_iter(self, mel_spectro: torch.Tensor, lang: torch.Tensor):
+        """Iteration of the training session (excluding validation)
+        Perform a forward pass and a backward propagation given an input and a reference.
+        Used for and by itertools.starmap(). 
+
+        Args:
+            mel_spectro (torch.Tensor): Mel Spectrogram — Input to the network.
+            lang (torch.Tensor): The fragment's language — the expected result.
+
+        Returns:
+            float?: The numerical value of the loss.
+        """
         loss = self.forward_pass(mel_spectro, lang)
 
         # Backward and optimize
@@ -100,7 +155,20 @@ class ConvNet(nn.Module):
 
         return loss.item()
 
-    def validation(self, validation_loader):
+    def validation(self, validation_loader: DataLoader) -> float:
+        """Compute the validation loss of the model at a given epoch.
+        Put the model on evaluation and no_grad mode, before computing individual validation losses, 
+        then the mean of those to get the batch's. Reactivate the model's training mode after computations.
+
+        Use the output of forward_pass and extract the numerical value through a emdbed function, 
+        to use itertools.starmap().
+
+        Args:
+            validation_loader (DataLoader): A DataLoader instance containing the validation data.
+
+        Returns:
+            float: The mean of the validation losses of the batch — the batch's validation loss.
+        """
         self.eval()  # Activate evaluation mode
         with torch.no_grad():
             def validation_iter(x, y): return self.forward_pass(x, y).item()
@@ -109,8 +177,17 @@ class ConvNet(nn.Module):
         self.train()  # Activate training mode
         return loss
 
-    def create_checkpoint(self, epoch):
-        path = os.path.join('checkpoints', f'model_{epoch}.ckpt')
+    def create_checkpoint(self, epoch_id: int):
+        """Create 'checkpoints' of the model
+        Write .ckpt files containing the model's parameters at the end of each epoch.
+
+        Use the 'Ask for forgiveness, not permission' principle to improve performances and
+        create a folder if needed (which should happen once at most per execution).
+
+        Args:
+            epoch_id (int): Number of the completed epoch (numbering starts at 1).
+        """
+        path = os.path.join('checkpoints', f'model_{epoch_id}.ckpt')
         try:
             torch.save(self.state_dict(), path)
         except FileNotFoundError:
@@ -118,7 +195,14 @@ class ConvNet(nn.Module):
             torch.save(self.state_dict(), path)
 
     def test(self, test_loader: DataLoader):
-        # Test the model
+        """Test the model through a testing set.
+
+        Switch on the evaluation mode, before computing the accuracy of the model.
+        Print the results, and write them to a text file.
+
+        Args:
+            test_loader (DataLoader): DataLoader containing the testing data.
+        """
         self.eval()  # eval mode (batchnorm uses moving mean/variance instead of mini-batch mean/variance)
         with torch.no_grad():
             correct = 0
