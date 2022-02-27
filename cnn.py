@@ -1,4 +1,3 @@
-from email import header
 import itertools
 
 import numpy as np
@@ -63,7 +62,7 @@ class ConvNet(nn.Module):
 
         # Train the model
         for epoch in range(NUM_EPOCHS):
-            loss = list(itertools.starmap(train_iter, train_loader))[-1].item()
+            loss = np.mean(list(itertools.starmap(train_iter, train_loader)))
 
             val_loss = validate()
 
@@ -103,7 +102,7 @@ class ConvNet(nn.Module):
         loss.backward()
         optimizer.step()
 
-        return loss
+        return loss.item()
 
     def test(self, test_loader: DataLoader):
         # Test the model
