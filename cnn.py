@@ -63,19 +63,20 @@ class ConvNet(nn.Module):
         def validate(): return self.validation(validation_loader)
 
         # Train the model
-        for epoch in range(1, self.num_epochs + 1):
+        for epoch in range(self.num_epochs):
+            epoch_ind = epoch + 1
             # Perform training and validation.
             train_loss = np.mean(
                 list(itertools.starmap(self.train_iter, train_loader)))
             val_loss = validate()
 
             # Print & store losses
-            print('Epoch [{}/{}], Loss: {:.4f}, Val. Loss: {:.4f}'.format(epoch,
+            print('Epoch [{}/{}], Loss: {:.4f}, Val. Loss: {:.4f}'.format(epoch_ind,
                   self.num_epochs, train_loss, val_loss))
             losses[epoch] = [train_loss, val_loss]
 
             # Create model checkpoint
-            self.create_checkpoint(epoch)
+            self.create_checkpoint(epoch_ind)
 
         # Store losses into CSV file.
         losses_df = pd.DataFrame(losses, columns=["Training", "Validation"])
