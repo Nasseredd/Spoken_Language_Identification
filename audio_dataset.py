@@ -25,20 +25,20 @@ class AudioDataset(Dataset):
 
     def __getitem__(self, index):
         audio_path = self.audio_paths[index]
-        mel_spectrogram_tensor = self.mel_spectrogram(audio_path)
+        mel_spectrogram_tensor = self.mel_spectrogram(audio_path).unsqueeze(0)
         audio_name = audio_path.split(os.sep)[-1]
         # Label : the 2 first characters of the audio_path (en, de, es)
         language = audio_name[:2]
         language_index = self.language2index[language]  # encode the Label
-        language_tensor = torch.Tensor([language_index])
+        language_tensor = torch.Tensor([language_index]).squeeze()
         language_tensor = language_tensor.type(torch.LongTensor)
         return mel_spectrogram_tensor, language_tensor
 
     # Mel Spectrogram
     def mel_spectrogram(self, audio_path):
         '''return the tensor of the mel spectrogram of the audio in shape (features, frames)'''
-        y, sr = librosa.load(
-            audio_path)  # y: audio time-series, sr: sample rate
+        y, sr = librosa.load(audio_path)  
+        # y: audio time-series, sr: sample rate
         mel_spectrogram = librosa.feature.melspectrogram(y=y, sr=sr)
         mel_spectrogram = torch.from_numpy(mel_spectrogram)
         return mel_spectrogram
@@ -56,8 +56,8 @@ if __name__ == '__main__':
     # create the dataloader
     dataloader = DataLoader(dataset, shuffle=True, batch_size=2)
     # display one single batch of a loader
-    for batch_size, (mel_spectrogram, language) in enumerate(dataloader):
-        # shape : [batch_size, num_features, num_frames]
+    for mel_spectrogram, language in dataloader:
+        # shape : [batch_size, num_samples (=1), num_features, num_frames]
         print(mel_spectrogram.shape)
         print(language)
         break

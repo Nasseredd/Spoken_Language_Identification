@@ -40,7 +40,6 @@ class ConvNet(nn.Module):
         self.optimizer = None
 
     def forward(self, x):
-        x = x.unsqueeze(1)
         out = self.layer1(x)
         out = self.layer2(out)
         out = out.reshape(out.shape[0], -1)
@@ -85,7 +84,6 @@ class ConvNet(nn.Module):
     def forward_pass(self, mel_spectro, expected):
         mel_spectro = mel_spectro.to(DEVICE)
         expected = expected.to(DEVICE)
-        expected = expected.squeeze()
 
         # Forward pass
         predicted = self(mel_spectro)
@@ -127,7 +125,6 @@ class ConvNet(nn.Module):
             for mel_spectro, lang in test_loader:
                 mel_spectro = mel_spectro.to(DEVICE)
                 lang = lang.to(DEVICE)
-                lang = lang.squeeze()
                 outputs = self(mel_spectro)
                 _, predicted = torch.max(outputs.data, 1)
                 total += lang.size(0)
