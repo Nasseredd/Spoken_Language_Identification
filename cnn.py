@@ -1,4 +1,5 @@
 import itertools
+import os 
 
 import numpy as np
 import pandas as pd
@@ -60,19 +61,36 @@ class ConvNet(nn.Module):
             criterion, validation_loader) if validation_loader else lambda: None
 
         # Train the model
-        for epoch in range(self.num_epochs):
+        for epoch in range(1, self.num_epochs + 1):
+            # Perform training and validation.
             loss = np.mean(list(itertools.starmap(train_iter, train_loader)))
-
             val_loss = validate()
 
-            print('Epoch [{}/{}], Loss: {:.4f}, Val. Loss: {:.4f}'.format(epoch +
-                  1, self.num_epochs, loss, val_loss))
-
+            # Print & store losses
+            print('Epoch [{}/{}], Loss: {:.4f}, Val. Loss: {:.4f}'.format(epoch, self.num_epochs, loss, val_loss))
             losses[epoch] = [loss, val_loss]
-            torch.save(self.state_dict(), f'model_{epoch+1}.ckpt')
+
+            # Create model checkpoint
+            self.create_checkpoint(epoch)
 
         losses_df = pd.DataFrame(losses, columns=["Training", "Validation"])
         losses_df.to_csv("training_losses.csv")
+
+    def __train_iteration(self, criterion, optimizer, mel_spectro, lang):
+        mel_spectro = mel_spectro.to(DEVICE)
+        lang = lang.to(DEVICE)
+        lang = lang.squeeze()
+
+        # Forward pass
+        outputs = self(mel_spectro)
+        loss = criterion(outputs, lang)
+
+        # Backward and optimize
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        return loss.item()
 
     def validation(self, criterion, validation_loader):
         self.eval()
@@ -88,20 +106,13 @@ class ConvNet(nn.Module):
         self.train()
         return loss / len(validation_loader)
 
-    def __train_iteration(self, criterion, optimizer, mel_spectro, lang):
-        mel_spectro = mel_spectro.to(DEVICE)
-        lang = lang.to(DEVICE)
-        lang = lang.squeeze()
-        # Forward pass
-        outputs = self(mel_spectro)
-        loss = criterion(outputs, lang)
-
-        # Backward and optimize
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-        return loss.item()
+    def create_checkpoint(self, epoch):
+        path = os.path.join('checkpoints', f'model_{epoch}.ckpt')
+        try:
+            torch.save(self.state_dict(), path)
+        except FileNotFoundError:
+            os.mkdir('checkpoints')
+            torch.save(self.state_dict(), path)
 
     def test(self, test_loader: DataLoader):
         # Test the model
