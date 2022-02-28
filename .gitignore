@@ -1,2 +1,11 @@
-*.lnk
-.vscode/
+# Data 
+Data/ 
+Audios_tmp/ 
+
+# Python files
+__pycache__/
+
+# Local files (Nasser's personal files)
+progress.txt
+single_audio.py 
+my_doc.txt
